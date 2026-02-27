@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv - HTTP Server Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #667eea;
+            color: #ffffff;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 50px 40px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+
+        .status-card {
+            background-color: #f9fafb;
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .status-card h3 {
+            color: #6b7280;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-card .value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .test-section {
+            margin-top: 50px;
+        }
+
+        .test-section h2 {
+            color: #1d1d1f;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+            font-weight: 700;
+            font-size: 1.8em;
+        }
+
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            color: #ffffff;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .file-upload {
+            margin: 24px 0;
+            padding: 32px;
+            background-color: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+        }
+
+        .file-upload input[type="file"] {
+            margin: 12px 0;
+            font-family: inherit;
+        }
+
+        #result {
+            margin-top: 24px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        #result.success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+
+        #result.error {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 16px 20px;
+            margin: 10px 0;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 1.3em;
+        }
+
+        code {
+            background-color: #f3f4f6;
+            color: #1d1d1f;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            display: block;
+            margin: 12px 0;
+            font-size: 0.9em;
+        }
+
+        h3 {
+            color: #1d1d1f;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Webserv HTTP/1.0 Server</h1>
+            <p>C++98 Implementation - Test Dashboard</p>
+        </div>
+
+        <div class="content">
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>Server Status</h3>
+                    <div class="value">✓ Running</div>
+                </div>
+                <div class="status-card">
+                    <h3>Protocol</h3>
+                    <div class="value">HTTP/1.0</div>
+                </div>
+                <div class="status-card">
+                    <h3>Default Port</h3>
+                    <div class="value">9000</div>
+                </div>
+                <div class="status-card">
+                    <h3>Implementation</h3>
+                    <div class="value">C++98</div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h2>Server Features</h2>
+                <ul class="feature-list">
+                    <li>Multiple server configurations (virtual hosting)</li>
+                    <li>Static file serving with MIME type detection</li>
+                    <li>CGI execution (PHP, Python)</li>
+                    <li>File upload support</li>
+                    <li>DELETE method for file/directory removal</li>
+                    <li>Custom error pages</li>
+                    <li>Directory autoindexing</li>
+                    <li>Non-blocking I/O with select()</li>
+                    <li>Chunked transfer encoding support</li>
+                    <li>Request body size limiting</li>
+                </ul>
+            </div>
+
+            <div class="test-section">
+                <h2>Quick Tests</h2>
+
+                <h3 style="margin-top: 20px;">Static File Serving</h3>
+                <div class="test-buttons">
+                    <a href="/" class="btn btn-primary">GET / (This page)</a>
+                    <a href="/error_pages/404.html" class="btn btn-primary">Error Page Test</a>
+                </div>
+
+                <h3 style="margin-top: 20px;">CGI Tests</h3>
+                <div class="test-buttons">
+                    <a href="/cgi-bin/test.py" class="btn btn-success">Python CGI</a>
+                    <a href="/cgi-bin/test.php" class="btn btn-success">PHP CGI</a>
+                </div>
+
+                <h3 style="margin-top: 20px;">Directory Listing</h3>
+                <div class="test-buttons">
+                    <a href="/uploads/" class="btn btn-warning">View Uploads</a>
+                    <a href="/cgi-bin/" class="btn btn-warning">View CGI Scripts</a>
+                </div>
+
+                <h3 style="margin-top: 20px;">File Upload (POST)</h3>
+                <div class="file-upload">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <label for="fileInput">Choose a file to upload:</label><br>
+                        <input type="file" id="fileInput" name="file" required><br>
+                        <button type="submit" class="btn btn-success" style="margin-top: 10px;">Upload File</button>
+                    </form>
+                </div>
+                <h3 style="margin-top: 20px;">Multi-File Upload</h3>
+                <div class="file-upload">
+                    <form id="multiUploadForm" enctype="multipart/form-data">
+                        <label for="multiFileInput">Choose files to upload:</label><br>
+                        <input type="file" id="multiFileInput" name="files" multiple required><br>
+                        <button type="submit" class="btn btn-success" style="margin-top: 10px;">Upload Files</button>
+                    </form>
+                </div>
+                <h3 style="margin-top: 20px;">DELETE Method Test</h3>
+                <div class="test-buttons">
+                    <button onclick="testDelete()" class="btn btn-danger">DELETE Test File</button>
+                </div>
+            </div>
+
+            <div id="result"></div>
+
+            <div class="test-section">
+                <h2>cURL Examples</h2>
+                <p style="margin-bottom: 15px;">Test the server from command line:</p>
+
+                <p><strong>GET Request:</strong></p>
+                <code style="display: block; padding: 10px; margin: 10px 0;">curl -v http://localhost:9000/</code>
+
+                <p><strong>POST File Upload:</strong></p>
+                <code style="display: block; padding: 10px; margin: 10px 0;">curl -X POST -F "file=@test.txt" http://localhost:9000/uploads</code>
+
+                <p><strong>CGI Test:</strong></p>
+                <code style="display: block; padding: 10px; margin: 10px 0;">curl http://localhost:9000/cgi-bin/test.py</code>
+
+                <p><strong>DELETE Request:</strong></p>
+                <code style="display: block; padding: 10px; margin: 10px 0;">curl -X DELETE http://localhost:9000/uploads/testfile.txt</code>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File upload handler
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('fileInput');
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/uploads', {
+                    method: 'POST',
+                    body: formData // <-- use FormData, not fileInput.files[0]
+                });
+
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+
+                if (response.ok) {
+                    result.className = 'success';
+                    result.textContent = '✓ File uploaded successfully!';
+                } else {
+                    result.className = 'error';
+                    result.textContent = '✗ Upload failed: ' + response.status + ' ' + response.statusText;
+                }
+            } catch (error) {
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+                result.className = 'error';
+                result.textContent = '✗ Error: ' + error.message;
+            }
+        });
+        document.getElementById('multiUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('multiFileInput');
+
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('files', fileInput.files[i]);
+            }
+
+            try {
+                const response = await fetch('/uploads', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+
+                if (response.ok) {
+                    result.className = 'success';
+                    result.textContent = '✓ Files uploaded successfully!';
+                } else {
+                    result.className = 'error';
+                    result.textContent = '✗ Upload failed: ' + response.status + ' ' + response.statusText;
+                }
+            } catch (error) {
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+                result.className = 'error';
+                result.textContent = '✗ Error: ' + error.message;
+            }
+        });
+        
+        document.getElementById('postCgiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const data = document.getElementById('postInput').value;
+
+
+            try {
+                const response = await fetch('/cgi-bin/test.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: data
+                });
+
+
+                const resultText = await response.text();
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+
+                if (response.ok) {
+                    result.className = 'success';
+                    result.textContent = resultText;
+                } else {
+                    result.className = 'error';
+                    result.textContent = '✗ Error: ' + response.status + ' ' + response.statusText;
+                }
+            } catch (err) {
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+                result.className = 'error';
+                result.textContent = '✗ Error: ' + err.message;
+            }
+        });
+
+
+        // DELETE test
+        async function testDelete() {
+            const filename = prompt('Enter filename to delete (in /uploads/):', 'testfile.txt');
+            if (!filename) return;
+
+            try {
+                const response = await fetch('/uploads/' + filename, {
+                    method: 'DELETE'
+                });
+
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+
+                if (response.ok) {
+                    result.className = 'success';
+                    result.textContent = '✓ File deleted successfully!';
+                } else {
+                    result.className = 'error';
+                    result.textContent = '✗ Delete failed: ' + response.status + ' ' + response.statusText;
+                }
+            } catch (error) {
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+                result.className = 'error';
+                result.textContent = '✗ Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
